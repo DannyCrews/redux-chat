@@ -1,15 +1,25 @@
 function reducer(state, action) {
+
   if (action.type === 'ADD_MESSAGE') {
+    const newMessage = {
+      text: action.text,
+      timestamp: Date.now(),
+      id: uuid.v4()
+    };
+
     return {
-      messages: state.messages.concat(action.message),
+      messages: state.messages.concat(newMessage),
     };
   } else if (action.type === 'DELETE_MESSAGE') {
+    const index = state.messages.findIndex(
+      (m) => m.id === action.id
+    );
     return {
       messages: [
-        ...state.messages.slice(0, action.index),
+        ...state.messages.slice(0, index),
         ...state.messages.slice(
-          action.index + 1, state.messages.length
-          ),
+          index + 1, state.messages.length
+        ),
       ],
     };
   } else {
@@ -41,7 +51,7 @@ const MessageInput = React.createClass({
   handleSubmit: function () {
     store.dispatch({
       type: 'ADD_MESSAGE',
-      message: this.refs.messageInput.value,
+      text: this.refs.messageInput.value,
     });
     this.refs.messageInput.value = '';
   },
@@ -60,16 +70,16 @@ const MessageInput = React.createClass({
         >
           Submit
         </button>
-       </div>
+      </div>
     );
   },
 });
 
 const MessageView = React.createClass({
-  handleClick: function (index) {
+  handleClick: function (id) {
     store.dispatch({
       type: 'DELETE_MESSAGE',
-      index: index,
+      id: id,
     });
   },
   render: function () {
@@ -77,14 +87,19 @@ const MessageView = React.createClass({
       <div
         className='comment'
         key={index}
-        onClick={() => this.handleClick(index)}
+        onClick={() => this.handleClick(message.id)}
       >
-        {message}
+        <div className='text'>
+          {message.text}
+          <span className='metadata'>@{message.timestamp}</span>
+        </div>
       </div>
     ));
     return (
-      <div className='ui comments'>
-        {messages}
+      <div className='ui center aligned basic segment'>
+        <div className='ui comments'>
+          {messages}
+        </div>
       </div>
     );
   },
